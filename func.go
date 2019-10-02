@@ -31,6 +31,12 @@ func EntryPoint(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Infof("Got data: %+v", data)
+
+		err = persistAll(data)
+		if (err != nil) {
+			handleError(http.StatusInternalServerError, "Error while persisting data", w)
+		}
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("{\"success\": true}"))
 
