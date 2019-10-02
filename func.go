@@ -23,29 +23,45 @@ func EntryPoint(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warnf("Error reading request body. %s", err)
 			handleError(http.StatusServiceUnavailable, defaultServerSideMessage, w)
+			return
 		}
 		var data = greenhouse.Data{}
 		err = json.Unmarshal(rawData, &data)
 		if err != nil {
 			handleError(http.StatusBadRequest, "Json payload is not valid", w)
+			return
 		}
 
 		log.Infof("Got data: %+v", data)
 
-		err = persistAll(data)
-		if (err != nil) {
-			handleError(http.StatusInternalServerError, "Error while persisting data", w)
+		if !data.Success {
+			log.Infof("Greenhouse client had error: %s", data.Message)
+			handleSuccess(w)
+			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("{\"success\": true}"))
+		err = persistAll(data)
+		if err != nil {
+			log.Warnf("error while persisting data: %s", err)
+			handleError(http.StatusInternalServerError, "Error while persisting data", w)
+			return
+		}
 
-	} else {
-		log.Infof("Page not found for %s - %s", r.Method, r.URL.Path)
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("not found"))
+		handleSuccess(w)
+		return
+
 	}
 
+	// Unkown request path / method combination
+	log.Infof("Page not found for %s - %s", r.Method, r.URL.Path)
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("not found"))
+
+}
+
+func handleSuccess(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("{\"success\": true}"))
 }
 
 func handleError(statusCode int, message string, w http.ResponseWriter) {
