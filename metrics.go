@@ -29,6 +29,7 @@ func init() {
 		log.Fatalf("monitoring.NewMetricClient: %v", err)
 	}
 
+	// When running in a cloud function environment the environment variable is always set
 	projectID = os.Getenv("GCP_PROJECT")
 	if projectID == "" {
 		log.Fatalf("missing project id in env var GCP_PROJECT")
@@ -40,13 +41,13 @@ func persistAll(data greenhouse.Data) error {
 	timestamp := data.UnixTimestampUTC
 
 	series := []*monitoringpb.TimeSeries{
-		createTimeSerial("temperature", timestamp, float64(data.Temperature)),
-		createTimeSerial("humidity", timestamp, float64(data.Humidity)),
+		createTimeSeriesForData("temperature", timestamp, float64(data.Temperature)),
+		createTimeSeriesForData("humidity", timestamp, float64(data.Humidity)),
 		// moisture data needs interpretation
-		createTimeSerial("soil_moisture", timestamp, float64(data.SoilMoistureResistance)),
+		createTimeSeriesForData("soil_moisture", timestamp, float64(data.SoilMoistureResistance)),
 	}
 
-	err := persistDataPoint(series)
+	err := persistTimeSeries(series)
 	if err != nil {
 		return fmt.Errorf("error persisting data: %v", err)
 	}
@@ -54,7 +55,7 @@ func persistAll(data greenhouse.Data) error {
 	return nil
 }
 
-func persistDataPoint(timeSeries []*monitoringpb.TimeSeries) error {
+func persistTimeSeries(timeSeries []*monitoringpb.TimeSeries) error {
 	log.Printf("Project id: %s Name: %s", projectID, monitoring.MetricProjectPath(projectID))
 	// Writes time series data.
 	if err := client.CreateTimeSeries(context.Background(), &monitoringpb.CreateTimeSeriesRequest{
@@ -69,7 +70,7 @@ func persistDataPoint(timeSeries []*monitoringpb.TimeSeries) error {
 	return nil
 }
 
-func createTimeSerial(metricName string, timestamp int64, dataPoint float64) *monitoringpb.TimeSeries {
+func createTimeSeriesForData(metricName string, timestamp int64, dataPoint float64) *monitoringpb.TimeSeries {
 	return &monitoringpb.TimeSeries{
 		Metric: &metricpb.Metric{
 			Type: fmt.Sprintf("custom.googleapis.com/greenhouse/%s", metricName),
