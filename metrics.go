@@ -43,7 +43,7 @@ func persistAll(data greenhouse.Data) error {
 	series := []*monitoringpb.TimeSeries{
 		createTimeSeriesForData("temperature", timestamp, float64(data.Temperature)),
 		createTimeSeriesForData("humidity", timestamp, float64(data.Humidity)),
-		// moisture data needs interpretation
+		// TODO moisture data needs interpretation
 		createTimeSeriesForData("soil_moisture", timestamp, float64(data.SoilMoistureResistance)),
 	}
 

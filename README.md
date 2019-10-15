@@ -1,26 +1,28 @@
 # greenhouse-receiver
 
-This is the server-side counterpart to the [https://github.com/ytsworld/greenhouse-client](raspberry device) that sends sensor data.
-The implementation is done based on a cloud function provided by Google Cloud Platform and creates custom stackdriver metrics to store metrics.
+This is the server-side counterpart to the [raspberry device](https://github.com/ytsworld/greenhouse-client) that sends sensor data.
+The implementation is done with a cloud function deployed at Google Cloud Platform and creates custom stackdriver metrics to store metrics.
 
 ## Authentication
-The cloud function expects a identity token to be part of the request header otherwise it will respond with `403 Forbidden`.
+The cloud function expects an identity token to be part of the request header otherwise it will respond with `403 Forbidden`.
 
-For local tests the token can be created using the gcloud tools:
+To trigger the deployed function the token can be created using the gcloud tools:
 `curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" https://[region]-[project_id].cloudfunctions.net/greenhouse-receiver`
 
-[https://github.com/ytsworld/greenhouse-client](A client device) use a service account key to create & refresh id tokens.
+[Client devices](https://github.com/ytsworld/greenhouse-client) use a service account key to create & refresh id tokens.
 A new service account key can be created using this script:
 
 ```
-PROJECT_ID=[your gcp project id]
+GCP_PROJECT=[your gcp project id]
+export GCP_PROJECT
 ./scripts/createClientSA.sh
 ```
 
 ## Local testing
-To run the integration tests locally create a service account with permissions to write monitoring metrics:
+To run the tests create a service account with permissions to write monitoring metrics:
 ```
-PROJECT_ID=[your gcp project id]
+GCP_PROJECT=[your gcp project id]
+export GCP_PROJECT
 ./scripts/createLocalReceiverSA.sh
 ```
 
@@ -34,7 +36,9 @@ go test
 ```
 
 ## Deploy
-For deployment use these script:
+
 ```
+GCP_PROJECT=[your gcp project id]
+export GCP_PROJECT
 ./scripts/deploy.sh
 ```

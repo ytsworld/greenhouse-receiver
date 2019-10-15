@@ -1,8 +1,8 @@
 #! /bin/bash
 set -e
 
-if [ -z "$PROJECT_ID" ]; then
-    echo "GCP project id is required in environment variable PROJECT_ID"
+if [ -z "$GCP_PROJECT" ]; then
+    echo "GCP project id is required in environment variable GCP_PROJECT"
     exit 1
 fi
 
@@ -10,7 +10,7 @@ echo "--------------- Client account ----------------"
 
 # TODO every device should have its unique identity
 sa_name="greenhouse-client"
-sa_id="${sa_name}@${PROJECT_ID}.iam.gserviceaccount.com"
+sa_id="${sa_name}@${GCP_PROJECT}.iam.gserviceaccount.com"
 
 # Create service account
 gcloud iam service-accounts create "${sa_name}" --display-name "Greenhouse Client" 

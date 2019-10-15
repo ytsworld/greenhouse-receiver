@@ -13,7 +13,7 @@ var (
 	defaultServerSideMessage = "Unexpected error occured on server side, please try again later"
 )
 
-// EntryPoint Will be provided as function to execute for Google Cloud functions
+// EntryPoint is provided as function to execute when a new authorized request is received
 func EntryPoint(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" && r.URL.Path == "/api/v1/greenhouse" {
